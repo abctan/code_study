@@ -1,3 +1,4 @@
+#include "tan.h"
 #include <stdio.h>
 
 int main()
