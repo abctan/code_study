@@ -1,0 +1,92 @@
+
+windows : kening 11223344
+
+	windows + r => cmd 
+	ipconfig /all
+	
+	ping 192.168.0.100
+
+
+linux : ping 192.168.0.254
+	
+	ifconfig ： 查看网卡信息
+
+	/etc/init.d/networking restart 重启网络服务
+
+
+	ping 192.168.0.254 -c 3  
+
+	[root@localhost 1st]# ping 192.168.0.254 -c 3
+	PING 192.168.0.254 (192.168.0.254) 56(84) bytes of data.
+	64 bytes from 192.168.0.254: icmp_seq=1 ttl=64 time=0.067 ms
+	64 bytes from 192.168.0.254: icmp_seq=2 ttl=64 time=0.032 ms
+	64 bytes from 192.168.0.254: icmp_seq=3 ttl=64 time=0.031 ms
+
+	--- 192.168.0.254 ping statistics ---
+	3 packets transmitted, 3 received, 0% packet loss, time 2423ms
+	rtt min/avg/max/mdev = 0.031/0.043/0.067/0.017 ms
+
+
+
+
+	以上表示可以连接
+
+
+	临时指定一个ip地址
+	ifconfig eth0 192.168.0.?(100 ~ 200)
+
+实现一个自动下载和上传shell脚本
+
+
+
+============================================
+函数作用：
+	就是把通用功能分封装处理。以供其他用户调用
+函数分类：
+	用户：
+		库函数：c89 c99
+			1 包含头文件
+				printf
+			2 连接库文件
+				/lib /usr/lib
+		自定义函数：
+			四部分：
+				int main(void)
+				{
+					return 0;
+				}
+						
+				函数类型：由函数返回值来决定
+					如果不需要返回值，则为void 
+					char short ing long float double long double
+					arr :
+					point:
+					struct :
+					union:
+					enum :
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+

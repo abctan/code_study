@@ -1,0 +1,18 @@
+GG = aa
+GG := ga${TT}
+
+TT = tt
+
+all:1.c install
+	@echo "hello"
+	echo ${GG}
+	@echo =================
+	@echo $@
+	@echo $^
+	@echo $<
+	@echo $+
+	@echo ==================
+test:
+	echo "test"
+install:
+	echo "install"

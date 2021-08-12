@@ -1,0 +1,124 @@
+数据结构
+	顺序表：地址空间连续的 
+
+	动态数组
+
+	顺序标 => 查找效率高
+
+四个文件：
+	main.c : 主文件 入口
+	
+
+	darr.c : 功能模块函数
+		功能子函数实现
+
+	darr.h : 公共资源存放处
+		头文件
+		函数声明
+		宏命令
+		全局变量
+		条件编译
+	makefile :  多文件编译	 menu.o
+
+	
+在linux下，所有的文件都是从根开始
+绝对路径：
+	从根开始就是绝对路径
+相对路径：
+	从当前工作目录开始就是相对路径
+
+
+add :
+	new_data old_data => malloc => mem ? size => count + 1
+
+
+int a;
+sizeof :
+	sizeof(int) = 4
+	sizeof(a) = ?
+	
+	sizeof(type) or sizeof(varname)
+
+
+===================================================
+预处理：
+	源文件(.c) => 二进制可执行文件 => 计算机识别
+	gcc file.c  => a.out
+	四步：
+		1 预处理 
+			把头文件展开并保存到源文件中
+
+			处理伪代码和特殊字符
+			头文件
+			< >: /usr/include
+			" ": pwd => /usr/include
+
+			宏命令
+				format :
+					#define name value
+
+					
+			条件编译
+				格式一：
+				#if const  
+					cmd;
+				endif
+				如果const为0 , 则不执行，反之，则执行
+			gcc -E file.c -o file.i
+		2 编译
+			检查语法错误或者词法规则 生成汇编代码
+			gcc -S file.i -o file.s
+		3 汇编 把汇编代码生成目标代码
+			gcc -c file.s -o file.o
+		4 链接 : 链接库文件
+			gcc file.o -o file
+
+			[root@localhost 8th]# ldd hello.o 
+			not a dynamic executable
+		[root@localhost 8th]# ldd hello
+		linux-gate.so.1 =>  (0x003e8000)
+		libc.so.6 => /lib/libc.so.6 (0x001f8000)
+		/lib/ld-linux.so.2 (0x001da000)
+	
+	输入两个数求最大数
+
+	接受字符串：fgets 
+	练习：用宏实现字符串接受
+
+=================================================
+链表：
+	有头 无序 不循环 单向	
+
+	无头 无序 不循环 单向	
+	有头 有序 不循环 单向	
+	无头 有序 不循环 单向	
+	有头 无序 循环 单向	
+	无头 无序 循环 单向	
+	有头 有序 循环 单向	
+	无头 有序 循环 单向	
+
+	有头 无序 不循环 双向	
+	无头 无序 不循环 双向	
+	有头 有序 不循环 双向	
+	无头 有序 不循环 双向	
+	有头 无序 循环 双向	
+	无头 无序 循环 双向	
+	有头 有序 循环 双向	
+	无头 有序 循环 双向	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,77 @@
+
+统一编辑器：
+	编辑器：vim
+	编译器：gcc
+同一平台：
+	uname -m 
+		i386	: 表示32位系统
+		x86_64	: 表示64位系统
+
+系统：
+	redhat
+	Ubuntun
+
+用户：
+	root
+	sudo
+
+	tom => root
+
+	su - root
+====================================
+网络：
+	ip地址 ：点分十进制代码
+		
+	网卡配置文件
+		vim /etc/sysconfig/network-scripts/ifcfg-eth0
+
+
+
+
+
+
+=================================
+申请内存空间地址：
+
+	void *malloc(size_t size);
+		参数：表示空间大小
+		注意：不会清空内存空间
+	void *calloc(size_t nmemb, size_t size);
+		第一个参数：表示数据个数
+		第二个参数：表示数据类型
+
+		注意：会清空
+	void *realloc(void *ptr, size_t size);
+	表示在原有的空间地址上申请
+释放内存空间
+	void free(void *ptr); 释放
+
+
+	事项动态数组int => malloc
+
+
+
+int => char => struct 
+
+
+=============================
+可视化操作：
+	可视化字符：v
+	可视化行：shift + v
+	可视化模块 ctrl + v
+
+	:s/oldkey/newkey/g
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,11 @@
+
+file => input
+	1 fputc fgetc
+	2 fputs fgets
+	3 fprintf fscanf
+	4 fwrite fread
+
+
+
+
+

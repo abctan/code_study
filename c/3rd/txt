@@ -1,0 +1,28 @@
+
+
+int => char => struct => add data 
+
+
+=> 1 申请空间 => 2 添加数据 => 数据类型
+
+=> struct => insert()
+
+函数四部分
+	1 函数类型
+	2 函数名
+	3 函数参数
+	4 函数体
+	int mian(void)
+	{
+		return 0;
+	}
+
+函数传参：
+	1 类型保持一致 char short int long float double long double 
+		
+	2 个数保持一致
+	3 位置保持一致
+
+
+
+

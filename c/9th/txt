@@ -1,0 +1,45 @@
+
+struct node_t{
+	int data;	//数据域
+	struct node_t *next;//指针域
+};	
+
+head
+
+num => malloc => node_t => init => head => end node  => next = NULL => insert => append
+
+
+for 
+init : 1
+con  : 2
+add	 : 3
+body : 4
+
+1 => 2 => 4 => 3 => 2 => 4 => 3 ... => con false
+案例：
+	for (i = 1; i < 10; i++)
+	{
+		;
+		printf("%d ", i);
+		printf("\n");
+	}
+
+
+1 有头 无序 不循环 单向链表 
+
+
+实现
+	无头 有序  不循环 单向
+	无头 无序  循环   单向
+
+
+作业：
+	实现有头 无序 不循环 单向链表逆序 
+
+
+
+
+
+
+
+

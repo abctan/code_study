@@ -1,0 +1,77 @@
+
+man : 版主命令
+ls	: 显示相关连接 
+cd 	：切换目录环境
+pwd	: 查看绝对路径
+touch : 创建文件
+rm	: 删除文件
+ln  : 创建硬链接
+ln -s : 创建软连接
+mkdir : 创建目录
+rmdir : 删除空目录
+tree  : 以树的结构显示目录信息
+stat   : 查看文件属性
+file	: 查看文件类型
+cp	: 拷贝
+mv  : 移动
+cat more less tail head  查看文件内容
+grep : 查看匹配关键字
+sort : 排序
+uniq : 去掉重复行
+wc	 : 统计
+cut  : 切割
+tr   : 替换
+重定向：
+管道命令 : |
+
+useradd
+userdel
+passwd
+su
+
+groupadd
+groupdel
+gpasswd
+
+chmod
+chown
+umask
+
+fdisk
+find
+which
+uname
+hostname
+
+ping
+ifconfig
+scp
+ssh
+mount
+showmount
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

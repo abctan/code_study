@@ -1,0 +1,41 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.6	//
+CC	Makefile	/^CC=gcc$/;"	m
+DARR	darr.h	/^}DARR;$/;"	t	typeref:struct:darr_t
+MAX	main.c	14;"	d	file:
+OBJECTS	Makefile	/^OBJECTS=main.o darr.o$/;"	m
+TARGET	Makefile	/^TARGET=darr$/;"	m
+__KEN_DARR_H__	darr.h	3;"	d
+age	main.c	/^	int age;$/;"	m	struct:cls_t	file:
+cls_t	main.c	/^struct cls_t{$/;"	s	file:
+cmp_age	main.c	/^int cmp_age(void *d1, void *d2)$/;"	f
+cmp_name	main.c	/^int cmp_name(void *d1, void *d2)$/;"	f
+cmp_sex	main.c	/^int cmp_sex(void *d1, void *d2)$/;"	f
+cn	main.c	/^	float cn;$/;"	m	struct:cls_t	file:
+count	darr.h	/^	int count;\/\/表示数据个数$/;"	m	struct:darr_t
+darr_append	darr.c	/^int darr_append(void *data, DARR *handle)$/;"	f
+darr_appprev	darr.c	/^int darr_appprev(void *data, DARR *handle)$/;"	f
+darr_cmp_t	darr.h	/^typedef int (darr_cmp_t)(void *d1, void *d2);$/;"	t
+darr_creat	darr.c	/^DARR *darr_creat(int size)$/;"	f
+darr_del_all	darr.c	/^void darr_del_all(void *key, darr_cmp_t *cmp, DARR *handle)$/;"	f
+darr_del_first	darr.c	/^void darr_del_first(void *key, darr_cmp_t *cmp, DARR *handle)$/;"	f
+darr_destroy	darr.c	/^void darr_destroy(DARR *handle)$/;"	f
+darr_find_first	darr.c	/^void *darr_find_first(void *key, darr_cmp_t *cmp, DARR *handle)$/;"	f
+darr_index_insert	darr.c	/^int darr_index_insert(void *data, int index, DARR *handle)$/;"	f
+darr_num	darr.c	/^int darr_num(DARR *handle)$/;"	f
+darr_op_t	darr.h	/^typedef void (darr_op_t)(void *);$/;"	t
+darr_t	darr.h	/^typedef struct darr_t{$/;"	s
+darr_travel	darr.c	/^void darr_travel(DARR *handle, darr_op_t *op)$/;"	f
+data	darr.h	/^	void *data;\/\/表示数据$/;"	m	struct:darr_t
+en	main.c	/^	float en;$/;"	m	struct:cls_t	file:
+id	main.c	/^	int id;$/;"	m	struct:cls_t	file:
+ls	main.c	/^void ls(void *data)$/;"	f
+main	main.c	/^int main(void)$/;"	f
+name	main.c	/^	char name[64];$/;"	m	struct:cls_t	file:
+result	main.c	/^	float result;$/;"	m	struct:cls_t	file:
+sex	main.c	/^	char sex;$/;"	m	struct:cls_t	file:
+size	darr.h	/^	int size;\/\/表示数据类型$/;"	m	struct:darr_t

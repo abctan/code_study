@@ -1,0 +1,80 @@
+库文件：
+	系统标准库存放路径 /lib
+
+动态库：
+	.so
+
+	1 需要.o文件
+		gcc -c file.c => file.o
+
+	2 把所有.o文件生成库文件
+		动态库文件命名格式
+			lib + name + .so + version
+		gcc -shared -fPIC -o libmyhello.so hello.o world.o
+
+		-shared : 表示生成动态共享库参数
+		-fPIC	: 表示生成库文件跟代码位置无关
+
+	3 编译：
+		gcc main.c -L ./ -lmyhello
+
+		-L : 表示指定库文件存放路径
+		-l : 表示库名
+	4 执行
+		[root@localhost lib]# ./a.out 
+		./a.out: error while loading shared libraries: libmyhello.so: cannot open shared object file: No such file or directory
+
+		1 默认系统库文件查找
+			mv libmyhello.so /lib
+		2 告诉kernel库文件存放路径
+			/etc/ld.so.conf
+			田间库文件存放绝对路径
+
+			生效
+			ldconfig
+			
+
+静态库：
+	.a
+
+	1 需要.o文件
+	2 生成静态库
+		ar -cr libmyworld.a hello.o world.o
+		-c :  表示创建
+		-r : 表示添加模块到静态库中
+	3 编译
+		gcc main.c -L . -lmyworld
+	4 执行
+		[root@localhost lib]# ./a.out 
+		main start ...
+		hello!
+		world!
+		main end ...
+
+	区别：
+		1 	动态库空间效率高
+			静态库执行效率高
+		2   动态库优先级高于静态库优先级
+=========================
+共用体：
+	
+========================
+goto :
+	1 容错
+	2 跳转
+	3 循环
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
