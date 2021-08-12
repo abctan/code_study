@@ -1,0 +1,242 @@
+
+
+arm : cortex_A8 
+soc : s5pv210
+
+
+安装交叉编译器
+	1 获取包源
+		arm-linux-gcc-4.5.1-v6-vfp-20120301.tgz
+	2 解压
+		tar -xvf arm-linux-gcc-4.5.1-v6-vfp-20120301.tgz
+	3 拷贝
+		cp opt/* /opt/ -rf
+	4 配置文件(环境变量)
+		~/.bash_profile or /etc/profile
+		添加如下一行
+		PATH=$PATH:/opt/FriendlyARM/toolschain/4.5.1/bin/
+
+		export PATH
+
+	5 配置生效
+		ctrl + alt + backspace(<-)	注销
+	6 验证
+		[root@localhost 1st]# arm-linux-  按两次tab键
+		arm-linux-addr2line  arm-linux-gprof
+		arm-linux-ar         arm-linux-ld
+		arm-linux-as         arm-linux-ldd
+		arm-linux-c++        arm-linux-nm
+		arm-linux-cc         arm-linux-objcopy
+		arm-linux-c++filt    arm-linux-objdump
+		arm-linux-cpp        arm-linux-populate
+		arm-linux-g++        arm-linux-ranlib
+		arm-linux-gcc        arm-linux-readelf
+		arm-linux-gcc-4.5.1  arm-linux-size
+		arm-linux-gccbug     arm-linux-strings
+		arm-linux-gcov       arm-linux-strip
+==========================================
+编译Uboot : 就是对基础设备初始化
+	 串口 时钟 看门狗 缓存 ....
+
+1 获取包源
+	dy210_uboot.tar.bz2
+2 解压
+	tar -xvf dy210_uboot.tar.bz2
+3 进入解压目录
+	cd sq210_uboot
+4 修改交叉编译器 arm-linux-gcc
+	
+	makefile
+
+	修改为
+	143 ifeq ($(ARCH),arm)
+	144 CROSS_COMPILE = arm-linux-
+	145 #CROSS_COMPILE = /usr/local/arm/4.4.1-eabi-cortex-a8/usr/bin/arm-linux-
+	146 #CROSS_COMPILE = /usr/local/arm/4.2.2-eabi/usr/bin/arm-linux-
+	147 #CROSS_COMPILE = /usr/local/arm/arm-2009q3/bin/arm-none-linux-gnueabi-
+
+5 配置uboot
+	make smdkv210single_config
+6 编译
+	make clean
+	make
+7 完成uboot可执行文件
+	链接地址：-Ttext 0xc3e00000
+	[root@localhost sq210_uboot]# ll u-boot.bin -h
+	-rwxr-xr-x 1 root root 272K 12-29 10:50 u-boot.bin
+==========================================
+链接串口设备
+	1 链接
+		VM => remove device => prolific USB-serical .. => connect
+	2 linux 
+		ls /dev/tty*
+			/dev/ttyUSB0
+
+
+配置串口
+	1 输出命令
+		minicom -s
+		┌───────────────────────────────────────────────────────────────────────┐
+		│ A -    Serial Device      : /dev/ttyUSB0                              │
+		│ B - Lockfile Location     : /var/lock                                 │
+		│ C -   Callin Program      :                                           │
+		│ D -  Callout Program      :                                           │
+		│ E -    Bps/Par/Bits       : 115200 8N1                                │
+		│ F - Hardware Flow Control : No                                        │
+		│ G - Software Flow Control : No                                        │
+		│                                                                       │
+		│    Change which setting?                                              │
+		└───────────────────────────────────────────────────────────────────────┘
+
+	2 保存为默认设置
+		Save setup as dfl 
+	3 退出
+		exit
+		
+=====================================
+下载数据到s5pv210 => dnw
+安装dnw驱动
+	1 获取包源
+		dnw_linux.tar 
+	2 解压
+		tar -xvf dnw_linux.tar
+	3 编译
+		make clean
+		make 
+
+		错误
+			/tools/armpdf/dnw_linux/secbulk/secbulk.c:184: 错误：初始值设定项里有未知的字段 ‘supports_autosuspend’
+
+			把这行注释掉
+	4 安装
+		make install
+	5 配置加载文件
+		/etc/rc.local
+		添加如下一行
+		/sbin/insmod /lib/modules/2.6.18-194.el5/extra/secbulk.ko
+
+	6 重启
+		reboot
+		init 6
+================================
+安装dnw命令
+	
+================================
+烧写uboot到DDR中
+查看CPU结构
+	查看三星的技术开发手册
+	S5PV210_UM_REV1.1.pdf
+
+	RAM ： 96K
+
+	ROM ： 64K
+
+	uboot : 272K
+
+	DDR	  : 512M
+		=> dy210_usb.bin => 11K
+
+	IROM and IRAM => 0xd0000000 => 0xd0020010
+	DDR => 0x20000000 => 0x23e00000
+
+	
+	1 下载dy210_usb.bin到IRAM的0xd0020010中
+		[root@localhost armpdf]# dnw dy210_usb.bin 
+		file name : dy210_usb.bin
+		file size : 11168 bytes
+		Writing data...
+		100%     11178 bytes     OK
+	2 下载uboot到DDR中 0x23e00000
+		[root@localhost sq210_uboot]# dnw u-boot.bin 0x23e00000
+		file name : u-boot.bin
+		file size : 278528 bytes
+		Writing data...
+		100%     278538 bytes     OK
+		 
+	
+	3 出现一个问题
+		DDR => 0
+		config.mk 
+
+		141 OPTFLAGS= -Os #-fomit-frame-pointer
+		修改为
+		141 OPTFLAGS=  #-fomit-frame-pointer
+
+
+		make clean && make
+
+		/tools/armpdf/sq210_uboot/fs/fat/fat.c:389: undefined reference to `__toupper'
+		make: *** [u-boot] 错误 1
+		
+		添加头文件
+		#include <linux/ctype.h>
+		
+		[root@localhost sq210_uboot]# ll u-boot.bin -h
+		-rwxr-xr-x 1 root root 480K 12-29 15:47 u-boot.bin
+
+================================
+烧写uboot到nandflash中
+	1 初始化DDR
+		pc : dnw dy210_usb.bin 0xd0020010
+	2 下载uboot到ddr
+		pc : dnw u-boot.bin 0x23e00000
+	3 初始化nandflash	=> nand erase
+		format : nand erase [clean] [off size]
+			off : 表示偏移位置
+			size : 表示空间大小
+
+		案例：
+		minicom : nand erase 0 0x100000
+
+	4 指定下载uboot地址
+		minicom : dnw 0x20000000
+	5 下载
+		pc : dnw u-boot.bin 0x20000000
+	6 烧写
+		minicom : nand write 0x20000000 0 0x100000
+	7 关闭板子电源 启动方式设定为nandflash,然后重启电源
+
+========================================
+kernel 外部设备初始化
+	
+编译kernel
+	1 获取源码包
+		linux-2.6.35.7-20121027.tgz => 90M
+	2 解压	
+		tar -xvf linux-2.6.35.7-20121027.tgz
+	3 进入解压目录
+		cd linux-2.6.35.7
+	4 修改交叉编译器
+		makefile
+
+		修改为
+		192 ARCH        ?= arm
+		 193 CROSS_COMPILE   ?= arm-linux-
+	5 配置
+		cp mini210_linux_defconfig .config
+		
+		图形界面
+		make menuconfig
+
+		save 
+	6 编译
+		make clean
+		make
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

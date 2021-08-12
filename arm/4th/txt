@@ -1,0 +1,142 @@
+搭架网络文件系统
+	1 创建根文件系统
+		mkdir /filesystem => filesystem.tar 
+	2 共享根文件系统 nfs
+		vim /etc/exports
+		添加如下一行
+		/filesystem *(rw)
+
+		service nfs restart
+
+		showmount -e serverip 
+	3 配置板子网络环境
+		ipaddr=192.168.0.253                                          
+		serverip=192.168.0.254                                        
+		gatewayip=192.168.0.1 
+		bootargs=console=ttySAC0,115200 init=/linuxrc root=/dev/nfs nfsroot=192.168.0.254:/filesystem ip=192.168.0.253:192.168.0.254:192.168.0.1:255.255.255.0:ken:eth0:off
+
+		ping serverip => is alive 表示可以连接
+	4 启动
+		reset
+		出现3个错误
+			1 mknod /filesystem/dev/console c 5 1
+			2 vim /filesystem/etc/init.d/rcS => mdev
+				#表示命令解析器
+				#!/bin/sh
+				#设置环境变量
+				PATH=/bin:/sbin:/usr/bin:/usr/sbin
+				export PATH
+				#挂载子文件系统
+				mount -t ramfs none /dev
+				mount -t proc   none /proc
+				mount -t sysfs none /sys
+				mount -t tmpfs none /tmp
+				#表示创建一个守护进程去执行
+				/sbin/mdev -s
+			3 chmod 0777 /filesystem -R
+	5 重启成功
+		
+		
+=============================================
+位运算符
+	符号位：最高位
+		1 : 表示是负数
+		0 : 表示是正数
+	算术移位：考虑符号位
+		算术右移：asr
+			ASR{S}<c> <Rd>,<Rm>,#<imm>
+			ASR{S}<c> <Rd>,<Rn>,<Rm>
+
+	逻辑移位：不考虑符号位
+		逻辑左移：lsl
+
+		逻辑右移：lsr
+
+	循环右移 ：ror
+		ROR{S}<c> <Rd>,<Rm>,#<imm>
+		ROR{S}<c> <Rd>,<Rn>,<Rm>
+		
+	
+	左移： 逻辑左移
+	右移： ？？
+
+	c >>
+
+	位或：|
+		0 0 => 0
+		0 1 => 1
+		1 0 => 1
+		1 1 => 1
+		orr
+			ORR{S}<c> <Rd>,<Rn>,#<const>
+
+	位与：&
+		0 0 => 0
+		0 1 => 0
+		1 0 => 0
+		1 1 => 1
+		and
+	取反：~
+		0 => 1
+		1 => 0
+		mvn
+	异或：^
+		0 0 => 0
+		0 1 => 1
+		1 0 => 1
+		1 1 => 0
+		eor
+	置1
+		1 << n |   	左移lsl -> orr
+	置0
+		~(1 << n) &  lss -> mvn -> and 
+	
+	清空
+		bic
+		BIC{S}<c> <Rd>,<Rn>,#<const>
+		BIC{S}<c> <Rd>,<Rn>,<Rm>{,<shift>}
+		Logical shift left <n> bits. 1 <= <n> <= 31.
+		LSL #<n>
+		Logical shift right <n> bits. 1 <= <n> <= 32.
+		LSR #<n>
+		Arithmetic shift right <n> bits. 1 <= <n> <= 32.
+		ASR #<n>
+		Rotate right <n> bits. 1 <= <n> <= 31.
+		ROR #<n>
+
+		BIC{S}<c> <Rd>,<Rn>,<Rm>,<type> <Rs>
+算术运算符
+	add:
+		ADD{S}<c> <Rd>,<Rn>,#<const>
+		ADD{S}<c> <Rd>,<Rn>,<Rm>{,<shift>}
+		ADD{S}<c> <Rd>,<Rn>,<Rm>,<type> <Rs>
+
+	sub:
+	mul:
+
+比较运算符：
+	cmp
+		CMP<c> <Rn>,#<const>
+		CMP<c> <Rn>,<Rm>{,<shift>}
+		CMP<c> <Rn>,<Rm>,<type> <Rs>
+		
+		大于：		>	gt
+		大于等于：	>=	ge
+		小于：		<	lt
+		小于等于：	<=	le
+		等于：		==	eq
+		不等于：	!=	ne
+跳转
+	bl : 可以返回跳转 
+	b  : 不可以返回跳转
+
+	练习
+	1 ＋ 2 ＋ 3 ＋ 。。 ＋１００　＝　？
+
+	ldr :　表示从内存中读数据
+	str :　表示保存数据给内存
+
+
+
+
+

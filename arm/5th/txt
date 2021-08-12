@@ -1,0 +1,143 @@
+
+寄存器：
+	r0 ~ r15 : 所有寄存器
+	r0 ~ r12 : 普通寄存器
+		r0 ~ r3 : 临时寄存器　用于函数传参
+		r11 => ip : 栈顶指针寄存器
+		r12 => fp : 保存栈顶指针寄存器
+	r13 ~ r15 : 特殊寄存器
+		r13 => sp : 栈指针寄存器　用于扩展寄存器不足
+		r14 => lr : 链接寄存器　用户保存返回地址
+		r15 => pc : 程序计数器　pc指向哪条指令，就会执行哪条指令
+		APSR : 程序状态寄存器
+		CPSR : CPU状态寄存器
+		SPSR : CPU状态备份寄存器
+	
+	ARM工作模式
+		用户模式
+		中断模式
+		快中断模式
+		管理员模式
+		异常模式
+			指令异常
+			数据异常
+		未定义模式
+		系统模式
+mov : 移动
+asr : 算术右移
+	ASR{S}<c> <Rd>,<Rm>,#<imm>
+	ASR{S}<c> <Rd>,<Rn>,<Rm>
+
+lsr : 逻辑右移
+lsl : 逻辑左右
+
+ror : 循环右移
+and	: 位与
+orr : 位或
+eor : 异或
+mvn : 取反
+bic : 清位
+add : 加法
+sub : 减法
+mul : 乘法
+cmp : 比较
+	eq : ==
+	ne : !=
+	gt : >
+	ge : >=
+	３lt : <
+	le : <=
+bl b : 跳转
+
+ldr : 从内存中读数据
+	立即数
+	LDR<c> <Rt>,[<Rn>{,#+/-<imm12>}]
+		表示在原寄存器基础上偏移位置，寄存器的值不会改变
+	LDR<c> <Rt>,[<Rn>],#+/-<imm12>
+		表示先把寄存器的值取出后在累加
+	LDR<c> <Rt>,[<Rn>,#+/-<imm12>]!
+		表示现累加再取指
+
+	寄存器
+	LDR<c> <Rt>,[<Rn>,+/-<Rm>{, <shift>}]{!}
+	LDR<c> <Rt>,[<Rn>],+/-<Rm>{, <shift>}
+
+str : 把数据保存内存
+	立即数
+	STR<c> <Rt>,[<Rn>{,#+/-<imm12>}]
+	STR<c> <Rt>,[<Rn>],#+/-<imm12>
+	STR<c> <Rt>,[<Rn>,#+/-<imm12>]!
+
+	寄存器
+	STR<c> <Rt>,[<Rn>,+/-<Rm>{, <shift>}]{!}
+	STR<c> <Rt>,[<Rn>],+/-<Rm>{, <shift>}
+
+
+	实现　strcpy
+
+	"hello world" => sp
+=========================================
+实现LED:
+	1 查看LED灯位置　=> SOC
+	2 查看核心板原理图
+		Tiny210V2_V1.0_120713_sch.pdf
+		低电平有效
+		led1　=> GPJ2_0
+		led2  => GPJ2_1
+		led3  => GPJ2_2
+		led4  => GPJ2_3
+	3 配置寄存器
+		查看三星技术开发手册
+		S5PV210_UM_REV1.1.pdf
+		
+		写数据就是输出模式
+		读数据就是输入模式
+
+		控制寄存器　设置模式
+		GPJ2CON    0xE020_0280
+		数据寄存器，设置高低电平
+		GPJ2DAT    0xE020_0284 
+		GPJ2PUD    0xE020_0288 
+		GPJ2DRV    0xE020_028C 
+		GPJ2CONPDN 0xE020_0290										  GPJ2PUDPDN 0xE020_0294
+
+		led1　=> GPJ2_0　=> [0:3] => 0001
+		led2  => GPJ2_1  => [4:7] => 0001
+		led3  => GPJ2_2  => [8:11]=> 0001
+		led4  => GPJ2_3  => [12:15]=>0001
+		数据寄存器
+		Port Group GPJ2 Control Register (GPJ2DAT, R/W, Address = 0xE020_0284)
+
+		led1 => 0
+			0 => led1 on
+			1 => led1 off
+		led2 => 1
+			0 => led2 on
+			1 => led2 off
+		led3 => 2
+			0 => led3 on
+			1 => led3 off
+		led4 => 3
+			0 => led4 on
+			1 => led4 off
+	4 代码实现
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+实现buzzer
+	1 查看底板原理图
+		Smart210SDK(Tiny210V2SDK)_1305_sch.pdf
+		高电平有效
+		XpwmTOUT0　=> 
+	2 查看核心板原理图
+		XpwmTOUT0　=> GPD0_0 
+
+	3 查看三星技术开发手册
+	控制寄存器
+		GPD0CON, R/W, Address = 0xE020_00A0
+		[0:3] => 0001
+	数据寄存器
+		GPD0DAT, R/W, Address = 0xE020_00A4
+		[0] => 1 buzzer_on
+		[0] => 0 buzzer_off
+	4 实现
+
+

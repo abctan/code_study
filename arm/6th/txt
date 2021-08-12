@@ -1,0 +1,123 @@
+
+ldr :
+str :
+
+led:
+buzzer:
+key:
+	1 查看底板原理图
+		k1 => XEINT16/KP_COL0
+		k2 => XEINT17/KP_COL1
+		k3 => XEINT18/KP_COL2
+		k4 => XEINT19/KP_COL3
+		k5 => XEINT24/KP_ROW0
+		k6 => XEINT25/KP_ROW1
+		k7 => XEINT26/KP_ROW2
+		k8 => XEINT27/KP_ROW3
+	2 查看核心板
+		k1 => XEINT16/KP_COL0 => GPH2_0
+		k2 => XEINT17/KP_COL1 => GPH2_1
+		k3 => XEINT18/KP_COL2 => GPH2_2
+		k4 => XEINT19/KP_COL3 => GPH2_3
+		k5 => XEINT24/KP_ROW0 => GPH3_0
+		k6 => XEINT25/KP_ROW1 => GPH3_1
+		k7 => XEINT26/KP_ROW2 => GPH3_2
+		k8 => XEINT27/KP_ROW3 => GPH3_3
+
+	3 三星开发手册
+		
+		GPH2CON, R/W, Address = 0xE020_0C40
+		k1 ~ k4 => 0x0000 => input
+
+		GPH2DAT, R/W, Address = 0xE020_0C44
+		0x00
+		k1 => [0] => 0
+		k2 => [1] => 0
+		k3 => [2] => 0
+		k4 => [3] => 0
+
+
+		测试：
+		k1 ~ k4 => 1111
+		k1 => 1110
+		k2 => 1101
+		k3 => 1011
+		k4 => 0111
+
+		GPH3CON, R/W, Address = 0xE020_0C60
+		k5 ~ k8 => [0:15] => 0x0000 => input
+
+		GPH3DAT, R/W, Address = 0xE020_0C64
+
+==================================
+多文件编译跟链接脚本有关
+	arm-linux-ld -verbose > test.lds
+
+
+	OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm",
+			  "elf32-littlearm")
+	OUTPUT_ARCH(arm)
+	ENTRY(_start)
+	SEARCH_DIR("=/usr/local/lib"); SEARCH_DIR("=/lib"); SEARCH_DIR("=/usr/lib");
+	SECTIONS
+	{
+		. = 0x20008000;  //表示执行地址
+
+		.text :	//表示代码段
+		{
+			test.o(*);	//表示第一个执行入口函数文件名　*表示匹配跟test相关的所有test文件
+			*.o(*);　//表示其他.o文件
+		}
+
+		.align = 4;　//表示４个字节对齐　
+	}
+
+================================
+实现设备驱动加载
+	１　代码实现
+	２　驱动文件加载内核中　filename.ko
+		insmod test.ko
+	３　卸载驱动
+		rmmod test
+
+		案例：
+			/arm/6th/07ARM # insmod test.ko 
+			[ 1601.933616] hello world!
+			/arm/6th/07ARM # rmmod test
+			rmmod: can't change directory to '/lib/modules': No such filey
+			/arm/6th/07ARM # mkdir /lib/modules
+			/arm/6th/07ARM # rmmod test
+			rmmod: can't change directory to '2.6.35.7-FriendlyARM': No sy
+			/arm/6th/07ARM # mkdir /lib/modules/2.6.35.7-FriendlyARM
+			/arm/6th/07ARM # rmmod test
+			[ 1699.519371] goodbye!
+
+	
+		查看驱动加载是否成功
+			/arm/6th/07ARM # insmod test.ko 　加载
+			[ 2030.606075] hello world!
+			/arm/6th/07ARM # lsmod 　　查看所有
+			test 538 0 - Live 0xbf00c000
+			/arm/6th/07ARM # rmmod test　卸载
+			[ 2054.480985] goodbye!
+			/arm/6th/07ARM # lsmod
+			/arm/6th/07ARM # 
+		查看驱动信息
+			[root@localhost 07ARM]# modinfo test.ko 
+			filename:       test.ko
+			license:        GPL
+			depends:        
+			vermagic:       2.6.35.7-FriendlyARM preempt mod_unload ARMv7 
+
+	
+
+
+
+
+
+
+
+
+
+
+

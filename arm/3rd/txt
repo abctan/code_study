@@ -1,0 +1,130 @@
+nandfalsh:
+	1M => uboot
+	5M => kernel
+	?M => filesystem 
+	
+查看分区
+	/ # cat proc/mtd                                                             
+	dev:    size   erasesize  name                                               
+	mtd0: 00040000 00020000 "misc"                                               
+	mtd1: 00500000 00020000 "recovery"                                           
+	mtd2: 00500000 00020000 "kernel"                                             
+	mtd3: 00300000 00020000 "ramdisk"                                            
+	mtd4: 1f200000 00020000 "system"  
+
+	[    1.233755] Creating 5 MTD partitions on "s5pv210-nand":                  
+	[    1.233807] 0x0000000c0000-0x000000100000 : "misc"                        
+	[    1.235501] 0x000000100000-0x000000600000 : "recovery"                    
+	[    1.242254] 0x000000600000-0x000000b00000 : "kernel"                      
+	[    1.247158] 0x000000b00000-0x000000e00000 : "ramdisk"                     
+	[    1.251442] 0x000000e00000-0x000020000000 : "system"  
+
+	编译kernel划分标准
+
+	512M = 2^29
+	实际用户划分标准
+		uboot 	: 0x0 - 0x100000 0x100000
+		kernel 	: 0x500000 - 0xA00000 0x500000
+		filesys : 0xA00000 - 0x20000000 502M => 
+		
+	
+	nanflash分区源文件
+		drivers/mtd/nand/s3c_nand.c
+
+	//表示分区结构体信息
+	struct mtd_partition s3c_partition_info[] = {
+		{
+			表示分区名
+			.name		= "misc",
+			表示起始地址
+			.offset		= (768*SZ_1K),          /* for bootloader */
+			表示分区大小
+			.size		= (256*SZ_1K),
+			表示标志位
+			.mask_flags	= MTD_CAP_NANDFLASH,
+		},
+		{
+			.name		= "recovery",
+			表示紧接上一个分区划分
+			.offset		= MTDPART_OFS_APPEND,
+			.size		= (5*SZ_1M),
+		},
+		{
+			.name		= "kernel",
+			.offset		= MTDPART_OFS_APPEND,
+			.size		= (5*SZ_1M),
+		},
+		{
+			.name		= "ramdisk",
+			.offset		= MTDPART_OFS_APPEND,
+			.size		= (3*SZ_1M),
+		},
+	#ifdef CONFIG_MACH_MINI210
+		{
+			.name		= "system",
+			.offset		= MTDPART_OFS_APPEND,
+
+			表示把所有剩余空间给system
+			.size		= MTDPART_SIZ_FULL,
+		}
+	#else
+		{
+			.name		= "system",
+			.offset		= MTDPART_OFS_APPEND,
+			.size		= (110*SZ_1M),
+		},
+		{
+			.name		= "cache",
+			.offset		= MTDPART_OFS_APPEND,
+			.size		= (80*SZ_1M),
+		},
+		{
+			.name		= "userdata",
+			.offset		= MTDPART_OFS_APPEND,
+			.size		= MTDPART_SIZ_FULL,
+		}
+	#endif
+	};
+
+	修改后重新编译再移植
+
+	再次查看分区
+	/ # cat proc/mtd                                                             
+	dev:    size   erasesize  name                                               
+	mtd0: 00100000 00020000 "uboot"                                              
+	mtd1: 00500000 00020000 "kernel"                                             
+	mtd2: 1f600000 00020000 "filesystem"  
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+移植文件系统到nandfalsh
+	1 压缩文件系统
+		tar -cvf filesystrm.tar ./*
+
+	2 初始化nandflash剩余空间
+		nand erase 0xa00000 0x1f600000
+	
+	3 挂载分区
+		/ # ls /dev/mtdblock*                                                        
+		/dev/mtdblock0  /dev/mtdblock1  /dev/mtdblock2  
+
+		mount /dev/mtdblock2 /mnt  挂载
+
+		df -h : 查看是否挂载成功
+	4 解压
+		tar -xvf filesystem.tar -C /mnt
+	5 修改环境变量
+		SQ210 # set bootargs "console=ttySAC0,115200 init=/linuxrc root=/dev/mtdblock
+		2"                                                                           
+		SQ210 # save  
+
+
+
+
+
+
+
+
+
+
+
+

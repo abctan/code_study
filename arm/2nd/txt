@@ -1,0 +1,234 @@
+编译内核：
+	
+测试kernel是否可以启动
+
+找到kernel运行地址 => arch/arm/kernel/vmlinux.lds => 0x20008000
+
+
+1 指定kernel下载地址
+	minicom : dnw 0x20008000
+2 下载kernel
+	pc :  dnw arch/arm/boot/zImage 0x20008000
+3 启动kernel
+	minicom : bootm 0x20008000
+
+4 报错：
+	1> 无显示
+	SQ210 # bootm 0x20008000                                      
+	Boot with zImage                                              
+	The input address don't need a virtual-to-physical translatio0
+																  Starting kernel ...                                     
+																																Uncompressing Linux... done, booting the kernel.
+
+	指定设显示备终端
+		bootargs 设置环境变量
+		
+		Documentation ： kernel说明文档目录
+		grep "console" ./ -R
+		vim serial-console.txt
+
+		console=device,options
+
+		device : ttySAC0 => 厂商
+		options : 115200
+
+		SQ210 # set bootargs "console=ttySAC0,115200"
+		SQ210 # save
+		Saving Environment to SMDK bootable device...
+		Erasing Nand...
+		Writing to Nand... 
+		Saved enviroment variables                                    
+		SQ210 # reset              
+
+
+	2> : 板子机器码是否跟kernel指定的机器码匹配
+		查看板子机器码：
+			SQ210 # bdinfo                                                
+			arch_number = 0x00000998         板子机器码(2456)                             
+			env_t       = 0x00000000                                      
+			boot_params = 0x20000100                                      
+			DRAM bank   = 0x00000000                                      
+			-> start    = 0x20000000                                      
+			-> size     = 0x20000000                                      
+			ethaddr     = 00:40:5C:26:0A:5B                               
+			ip_addr     = 192.168.1.20                                    
+			baudrate    = 115200 bps         
+
+		查看kernle 指定机器码
+			arch/arm/tools/mach-types
+
+			mini210         MACH_MINI210        MINI210         3466
+
+			板子
+			[root@localhost sq210_uboot]# vim include/configs/smdkv210single.h 
+			[root@localhost sq210_uboot]# pwd
+			/tools/armpdf/sq210_uboot
+			:/MACH_TYPE
+			#define MACH_TYPE       2456
+
+
+			通过命令临时指定
+			set machid "0xd8a"
+
+
+	3> : 内存不匹配
+		DDR =>  512M
+		kernel => /arch/arm/mach-s5pv210/include/mach/memory.h
+
+		内存修改文件
+		/* Maximum of 256MiB in one bank */
+		#define MAX_PHYSMEM_BITS    32
+		#define SECTION_SIZE_BITS   28
+		#define NODE_MEM_SIZE_BITS  28
+
+
+		修改为
+		/* Maximum of 256MiB in one bank */
+		#define MAX_PHYSMEM_BITS    32
+		#define SECTION_SIZE_BITS   29
+		#define NODE_MEM_SIZE_BITS  29     => 512M
+
+
+		临时指定
+		SQ210 # set bootargs "console=ttySAC0,115200 mem=256M"        
+		SQ210 # save    
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+移植kernel到nandflash中
+	1 指定kernel下载DDR中地址
+		minicom: dnw 0x20008000
+	2 下载
+		pc : dnw arch/arm/boot/zImage 0x20008000
+	3 初始化nandflash
+		minicom : nand erase 0x500000 0x500000
+	4 烧写
+		minicom : nand write 0x20008000 0x500000 0x500000
+	5 设置启动参数 bootcmd
+		开启换行 ctrl + a => w
+		SQ210 # set bootcmd "nand read 0x20008000 0x500000 0x500000; bootm 0x20008000"                                              
+		SQ210 # save 
+
+	6 重启
+		reset
+============================================		
+编译文件系统
+	1 获取包源
+		busybox-1.21.1.tar.bz2
+	2 解压
+		tar -xvf busybox-1.21.1.tar.bz2
+	3 修改交叉编译器
+		164 CROSS_COMPILE ?= arm-linux-
+	4 配置
+		make menuconfig
+
+		32位
+		Ubuntun : apt-get install ncurses*   dpkg
+		redhat : yum	install ncurses*	 rpm
+
+		save => .config
+	
+	5 编译
+		make clean
+		make
+	6 安装
+		make install
+	7 完成
+		ls _install => bin sbin usr 
+==============================================
+搭架跟文件系统
+	1 创建根文件目录
+		mkdir /filesystem
+		cd /filesystem
+		mkdir bin sbin etc dev mnt lib opt sys pro tmp usr
+	2 拷贝编译文件系统命令到根文件系统下
+		cp _install/* /filesystem -rf
+	
+	3 拷贝库文件
+		[root@localhost filesystem]# cp /opt/FriendlyARM/toolschain/4.5.1/arm-none-linux-gnueabi/sys-root/lib/* /filesystem/lib/ -rf
+		[root@localhost filesystem]# cp /opt/FriendlyARM/toolschain/4.5.1/arm-none-linux-gnueabi/sys-root/usr/lib/* /filesystem/lib/ -rf
+		cp：是否覆盖“/filesystem/lib/libiberty.a”? 
+	4 搭架nfs服务
+		服务器：pc
+			1> 安装nfs
+				apt-get install nfs*
+				yum install nfs*
+			2> 配置
+				/etc/exports
+				添加如下一行
+				/filesytem *(rw)
+			3> 重启nfs服务
+				/etc/init.d/nfs restart
+			4> 查看配置是否成功
+				[root@localhost filesystem]# showmount -e 192.168.0.254
+				Export list for 192.168.0.254:
+				/ken       *
+				/tools     *
+				/homework  *
+				/filesytem *
+		客户端：s5pv210
+			 1 设定ip
+	5 配置s5pv210网络
+		SQ210 # set ipaddr 192.168.0.20                               
+		SQ210 # set serverip 192.168.0.254                            
+		SQ210 # set gatewayip 192.168.0.1                             
+		SQ210 # set netmask 255.255.255.0                             
+		SQ210 # save                      
+
+		测试网络
+			SQ210 # ping 192.168.0.254                                    
+			dm9000 i/o: 0x88000000, id: 0x90000a46                        
+			DM9000: running in 16 bit mode                                
+			MAC: 00:40:5c:26:0a:5b                                        
+			could not establish link                                      
+			ping failed; host 192.168.0.254 is not alive  表示网络不通
+			SQ210 # ping 192.168.0.254                                    
+			dm9000 i/o: 0x88000000, id: 0x90000a46                        
+			DM9000: running in 16 bit mode                                
+			MAC: 00:40:5c:26:0a:5b                                        
+			operating at 100M full duplex mode                            
+			host 192.168.0.254 is alive  表示可以ping通
+
+		
+		修改环境变量bootargs 告诉kernel从那快启动文件系统
+			filesystems/nfs/nfsroot.txt
+			
+			init=/linuxrc : 表示告诉kernel第一个启动进程
+			root=/dev/nfs ： 表示告诉kernel所使用服务是nfs
+			nfsroot=[<server-ip>:]<root-dir>[,<nfs-options>]
+				告诉kernel共享目录
+			ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf> 基本信息	
+			
+			SQ210 # set bootargs "console=ttySAC0,115200 mem=256M init=/linuxrc root=/dev/nfs nfsroot=192.168.0.254:/filesystem ip=192.168.0.20:192.168.0.254:192.168.0.1:255.255.255.0:ken:eth0:off" 
+			SQ210 # save 
+	
+	6 重启
+		报错
+		/init: line 109: can't open /r/dev/console: no such file
+		
+		[root@localhost filesystem]# mknod dev/console c 5 1
+		[root@localhost filesystem]# ll dev/
+		总计 0
+		crw-r--r-- 1 root root 5, 1 12-30 16:52 console
+
+		报错
+		/init: line 109: can't create /r/dev/console: Permission denied
+		
+		chmod 0777 /filesystem/ -R
+
+
+		报错
+		can't open /dev/tty2: No such file or directory
+		can't open /dev/tty3: No such file or directory
+		can't open /dev/tty4: No such file or directory
+
+		处理 创建一个守护进程 mdev
+		[root@localhost filesystem]# cd etc/
+		[root@localhost etc]# mkdir init.d
+		[root@localhost etc]# cd init.d/
+		[root@localhost init.d]# touch rcS
+		[root@localhost init.d]# ls
+		rcS
+		[root@localhost init.d]# pwd
+		/filesystem/etc/init.d
+
+

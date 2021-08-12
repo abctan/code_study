@@ -1,0 +1,1 @@
+cmd_/filesystem/arm/6th/08LEDOPTION/test.ko := arm-linux-ld -EL -r  -T /tools/armpdf/linux-2.6.35.7/scripts/module-common.lds --build-id -o /filesystem/arm/6th/08LEDOPTION/test.ko /filesystem/arm/6th/08LEDOPTION/test.o /filesystem/arm/6th/08LEDOPTION/test.mod.o
