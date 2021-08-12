@@ -1,0 +1,158 @@
+msg:
+	1 获取关键字
+		ftok
+	2 创建消息队列
+		msgget
+	3 发送消息
+		msgsnd
+	4 接受消息
+		msgrcv
+	5 销毁消息队列
+		msgctl
+
+shm :
+	1 获取关键字
+		ftok
+	2 创建共享内存
+		shmget
+	3 映射
+		shmat
+	4 发送数据
+		strcpy memcpy memmove
+	5 获取数据
+		strcpy memcpy memmove
+	6 解映射
+		shmdt
+	7 销毁
+		shmctl
+
+sem :		
+	1 获取关键字
+		ftok
+	2 创建信号量锁
+		semget
+	3 初始化信号量锁
+		semctl
+	4 设置加锁和解锁
+		semop
+	5 销毁
+		semctl
+
+=================================
+线程：唯一表示就是线程号
+	就是一段可执行代码，并在内存中运行
+
+	一段程序中， 至少包括一个进程，而一个进程中至少包括一个线程
+
+	进程是资源管理的最小单位
+	线程是执行流的最小单位
+	
+	进程安全性比线程高
+	线程执行效率比进程高
+
+	一个进程的异常退出，另一个进程在保护模式下不受影响。
+	一个线程的异常退出，则会导致同一进程的所有线程退出。
+
+获取线程号
+	typedef unsigned long int pthread_t;
+	pthread_t pthread_self(void);
+
+	注意：
+		编译的时候链接库文件 -lpthread
+
+	1 共享内存空间
+	2 动态性
+	3 并发行
+	4 异步性
+
+创建一个线程：
+	int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr, void  *(*start_routine)(void*),  void  *restrictarg);
+	第一个参数：表示创建线程线程id
+	第二个参数：表示创建线程属性 NULL
+	第三个参数：表示创建线程执行函数 
+		如果无须执行则NULL
+	第四个参数：表示给线程执行函数传递参数
+		如果不需要传递参数 NULL
+	返回值：
+		成功：0
+		失败：非零
+
+线程退出：
+	void pthread_exit(void *value_ptr);
+
+线程等待：
+	int pthread_join(pthread_t thread, void **value_ptr);
+	第一个参数：表示等待那个线程退出
+	第二个参数：表示等待线程退出返回值
+
+线程销毁
+	int pthread_cancel(pthread_t thread);
+
+======================================
+线程互斥锁
+	动态锁：
+		初始化
+		int pthread_mutex_init(pthread_mutex_t *restrict mutex,
+		              const pthread_mutexattr_t *restrict attr);
+		第一个参数：表示锁变量
+		第二个参数：表示锁的属性 NULL 快速互斥锁
+		成功：
+			0
+		销毁
+		int pthread_mutex_destroy(pthread_mutex_t *mutex);
+		参数：表示锁变量
+		
+		加锁：
+			int pthread_mutex_lock(pthread_mutex_t *mutex);
+		解锁：
+			int pthread_mutex_unlock(pthread_mutex_t *mutex);
+		尝试加锁
+			int pthread_mutex_trylock(pthread_mutex_t *mutex);
+
+	静态锁：	
+		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+========================
+清理函数
+	注册
+	void pthread_cleanup_push(void  (*routine)(void*),  void
+		          *arg);
+	第一个参数：表示注册函数指针
+	第二个参数：表示给注册函数传递参数
+	执行			  
+	void pthread_cleanup_pop(int execute);
+	参数：
+		1 ： 表示执行
+		0 ： 不执行
+
+	注意：
+		1 注册顺序和执行的顺序相反的
+		2 执行顺序和代码位置有关
+		3 之测函数和执行函数要一一对应
+
+================================
+网络编程：
+	就是套接子实现进程之间通讯 这就是网络编程
+		
+网络基础知识：
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

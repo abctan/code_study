@@ -1,0 +1,35 @@
+练习：
+	ctrl + c => 2 => filename => hello
+
+接受数据
+fgetc() : 表示从文件中读取一个字符
+fgets()	： 表示文件冲获取一行信息
+getc()	: 表示从文件中获取一个字符
+gets()
+getchar()
+
+输出数据
+putchar()
+puts
+fputs
+
+zhangsan and lisi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

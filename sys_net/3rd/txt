@@ -1,0 +1,391 @@
+man 2 => sys
+man 3 => c
+
+open => option => close
+fd => read write lseek dup dup2 fcntl
+stat => type mode link uid gid size name ...
+
+=========================
+/etc/passwd
+[root@localhost include]# head -n 3 /etc/passwd
+root:x:0:0:this is root username:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+第一列：表示用户名
+第二列：表示密码 /etc/shadow => md5
+第三列：表示用户uid adduser useradd
+第四列：表示用户组gid groupadd
+第五列：表示描述行信息
+第六列：表示用户家目录
+	root => /root
+	otheruser => /home/username
+第七列：表示用户所使用shell
+
+通过用户uid返回用户信息结构体
+struct passwd *getpwuid(uid_t uid);
+	struct passwd {
+		char   *pw_name;       /* user name */
+		char   *pw_passwd;     /* user password */
+		uid_t   pw_uid;        /* user ID */
+		gid_t   pw_gid;        /* group ID */
+		char   *pw_gecos;      /* real name */
+		char   *pw_dir;        /* home directory */
+		char   *pw_shell;      /* shell program */
+	};
+
+通过用户名获取用户帐号信息文件
+truct passwd *getpwnam(const char *name);
+
+循环获取用户帐号信息文件
+struct passwd *getpwent(void);
+void setpwent(void);//设置到文件开头
+void endpwent(void);//结束销毁
+
+用户组信息文件
+/etc/group
+	[root@localhost 3rd]# head -n 3 /etc/group
+	root:x:0:root
+	bin:x:1:root,bin,daemon
+	daemon:x:2:root,bin,daemon
+	第一列：表示组名
+	第二列：表示组密码 //etc/gshadow
+	第三列：表示组gid
+	第四列：表示组成员
+	
+struct group *getgrgid(gid_t gid);
+struct group *getgrnam(const char *name);
+struct group {
+	char   *gr_name;       /* group name */
+	char   *gr_passwd;     /* group password */
+	gid_t   gr_gid;        /* group ID */
+	char  **gr_mem;        /* group members */
+	
+	
+	"tom jim mary" ... char *
+	"tom" "jim" "mary" ... char *p[]
+};
+struct group *getgrent(void);
+void setgrent(void);
+void endgrent(void);
+==========================================
+
+[root@localhost 3rd]# grub-md5-crypt 
+Password: 			明文
+Retype password: 
+$1$3w9xg0$lsmyAbWNyEtWqVk.qcbys1  暗文
+$1$3w9xg0$	：密钥
+lsmyAbWNyEtWqVk.qcbys1 ：密码
+md5算法加密函数
+char *crypt(const char *key, const char *salt);
+	第一个参数：表示关键字(明文)
+	第二个参数：表示密钥
+	返回值：
+		就是暗文
+
+	注意：
+		1 链接密码库 -lcrypt
+		2 指定宏命令，且报存在头文件前面
+
+/etc/shadow 用户密码帐号信息文件
+	[root@localhost 3rd]# head -n 3 /etc/shadow
+	root:$1$Kc81kkrT$SLMBf6Xwo4eK2R0WSGMXu0:18233:0:99999:7:::
+	bin:*:17678:0:99999:7:::
+	daemon:*:17678:0:99999:7:::
+	第一列：表示用户名
+	第二列：表示密码
+	第三列：表示从1970年1月1日到上次间隔天数
+	第四列：表示两次修改密码间隔天数
+		0 : 表示随时可以修改
+	第五列：表示密码有效期
+	第六列：表示密码失效前天数
+	第七列：表示密码失效后还可以使用天数
+	第八列：表示帐号失效天数
+	第九列：表示保留
+	
+	通过用户名获取密码信息结构体
+	struct spwd *getspnam(char *name);
+	struct spwd {
+		char          *sp_namp; /* user login name */
+		char          *sp_pwdp; /* encrypted password */
+		long int      sp_lstchg; /* last password change */
+		long int      sp_min; /* days until change allowed. */
+		long int      sp_max; /* days before change required */
+		long int      sp_warn; /* days warning for expiration */
+		long int      sp_inact; /* days before account inactive */
+		long int      sp_expire; /* date when account expires */
+		unsigned long int  sp_flag; /* reserved for future use */
+	}
+	struct spwd *getspent();
+	void setspent();
+	void endspent();
+
+====================================
+时间函数
+	time_t time(time_t *t);
+	参数：表示时间变量
+	返回值：
+		成功：1970年1月1日 => now => seconds
+把时间秒数转换成字符串
+	char *ctime(const time_t *timep);
+把时间秒数转换成时间结构体
+	获取国际标准时间
+	struct tm *gmtime(const time_t *timep);
+	struct tm {
+		int tm_sec;         /* seconds */
+		int tm_min;         /* minutes */
+		int tm_hour;        /* hours */
+		int tm_mday;        /* day of the month */
+		int tm_mon;         /* month */
+		int tm_year;        /* year */
+		int tm_wday;        /* day of the week */
+		int tm_yday;        /* day in the year */
+		int tm_isdst;       /* daylight saving time */
+	};
+
+	获取本地时间
+	struct tm *localtime(const time_t *timep);
+
+	把时间结构体转换字符串
+	char *asctime(const struct tm *tm);
+	把时间结构体转换成秒
+	time_t mktime(struct tm *tm);
+	
+	时间格式化函数
+	size_t strftime(char *s, size_t max, const char *format,
+	                           const struct tm *tm);
+	第一个参数：表示保存时间格式空间
+	第二个参数：表示空间大小
+	第三个参数：表示就是时间格式
+		年：	%Y %y
+		月：	%m
+		日：	%d
+		小时：	%H
+		分钟：	%M
+		秒：	%S
+		星期：	%w
+	第四个参数：表示时间结构体
+
+查找链接文件目标文件
+	ssize_t  readlink(const  char  *path,  char *buf, size_t
+	       bufsiz);
+		   
+	第一个参数：表示文件路径
+	第二个参数：表示保存目标文件空间
+	第三个参数：表示空间大小
+	返回值：
+
+=================================================
+修改文件权限
+	int chmod(const char *path, mode_t mode);
+	int fchmod(int fildes, mode_t mode);
+默认权限
+	mode_t umask(mode_t mask);
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+高级权限：
+	属主：u
+	属组：g
+	其他用户：o
+	所有用户：a
+	表示属主特权
+	S_ISUID    0004000   set UID bit
+		chmod 04XXX filename
+		chmod u+s filename
+		目录：对目录不适用
+		文件：二进制可执行文件，如果是管理员的命令，而普通用户需要执行，则可以设置这样一个特权。则普通用户执行这个命令就会委托管理员去执行。
+	S_ISGID    0002000   set-group-ID bit (see below)
+		chmod 02XXX filename | dirname
+		chmod g+s filename | dirname 
+		目录：所有用户在目录中创建文件或者目录都归目录的属组所有
+		文件：对文件不适用
+	S_ISVTX    0001000   sticky bit (see below)
+		chmod 01XXX filename | dirname
+		chmod o+t filename | dirname
+		目录：如果设置特权，则每一个用户只能查看别用户文件，不可以修改或者删除。
+		文件：不适用
+
+
+
+修改文件属主和属组
+	int chown(const char *path, uid_t owner, gid_t group);
+	int fchown(int fd, uid_t owner, gid_t group);
+	int lchown(const char *path, uid_t owner, gid_t group);
+
+创建硬链接
+	int link(const char *oldpath, const char *newpath);
+创建软链接
+	int symlink(const char *oldpath, const char *newpath);
+创建文件
+	int open(const char *pathname, int flags);
+	int open(const char *pathname, int flags, mode_t mode);
+	int creat(const char *pathname, mode_t mode);
+删除文件
+	int unlink(const char *pathname);
+创建目录
+	int mkdir(const char *pathname, mode_t mode);
+删除目录
+	int rmdir(const char *pathname);
+	int remove(const char *pathname);
+切换目录
+	int chdir(const char *path);
+	int fchdir(int fd);
+获取当前工作目录
+	char *getcwd(char *buf, size_t size);
+	char *get_current_dir_name(void);
+	char *getwd(char *buf);
+
+===================================
+打开目录
+	DIR *opendir(const char *name);
+关闭目录
+	int closedir(DIR *dir);
+读文件目录信息
+	int readdir(unsigned int fd, struct dirent *dirp,
+	                   unsigned int count); => open
+	struct dirent *readdir(DIR *dir);
+	struct dirent {
+		ino_t          d_ino;       /* inode number */
+		off_t          d_off;       /* offset to the next dirent */
+		unsigned short d_reclen;    /* length of this record */
+		unsigned char  d_type;      /* type of file */
+		char           d_name[256]; /* filename */
+	};
+
+
+enum
+{
+	DT_UNKNOWN = 0,
+# define DT_UNKNOWN DT_UNKNOWN
+	DT_FIFO = 1,		表示管道 p
+# define DT_FIFO    DT_FIFO
+	DT_CHR = 2,			表示字符设备
+# define DT_CHR     DT_CHR
+	DT_DIR = 4,			表示目录
+# define DT_DIR     DT_DIR
+	DT_BLK = 6,			表示块设备
+# define DT_BLK     DT_BLK
+	DT_REG = 8,			表示普通文件
+# define DT_REG     DT_REG
+	DT_LNK = 10,		表示链接文件
+# define DT_LNK     DT_LNK
+	DT_SOCK = 12,		表示套接子
+# define DT_SOCK    DT_SOCK
+	DT_WHT = 14
+# define DT_WHT     DT_WHT
+
+================================
+进程：
+	就是一段可执行程序， 并放在内存中运行，这就是进程
+	区分不同进程，是通过进程id 
+	进程号是由系统来指定。
+
+	进程是系统资源管理的最小单位
+	线程是进程执行流的最小单元。
+	线程是在进程基础之上提出的，现有进程，才有线程。
+
+	进程是由父进化创建的
+	复制父进程的所有资源(进程表相，文件描述符， 工作目录， 默认权限，内存空间 。。。。)
+	特性：
+	动态性：动态产生，动态消亡过程
+	独享性：进程之间内存空间是独享的
+	并发行：谁先获得CPU资源谁先运行，竞争CPU资源
+	异步性：CPU在同一时间段只能运行一段代码
+		时间片轮转机制实现 CPU只有一个
+
+进程五态模型	
+	新建态 就绪态 运行态 阻塞态 终止态
+
+进程之间通讯
+	信号 管道 消息队列 共享内存 信号量 套接子
+
+获取进程号：
+	pid_t getpid(void);
+获取父进程号：
+	pid_t getppid(void);
+========================
+创建子进程
+	pid_t fork(void);
+	返回值：
+		-1 : 表示失败
+		0  ：表示子进程在运行
+		>0 : 表示父进程在运行
+
+练习：
+	创建父子进程 
+		parent => open => write 
+		child => write => ?
+		
+		child  => close => parent ?
+
+		child => 10000
+		parnet => 10000
+		file => 20000 => ?
+====================================
+
+进程退出
+	1 正常退出
+		1 从main函数退出 return 
+		2 调用exit()   =====>  
+		3 调用_exit() or _Exit()
+		4 调用最后一个线程退出pthread_exit
+		5 调用最后一个线程返回 exit return _exit
+	2 异常退出
+		1 调用abort()
+			void abort(void);
+		2 调用一个信号 信号一般都是终止 中断
+			int kill(pid_t pid, int sig);
+			第一个参数：表示进程号
+			第二个参数：表示信号
+			[root@localhost 4th]# kill -l
+		1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL
+		5) SIGTRAP      6) SIGABRT      7) SIGBUS       8) SIGFPE
+		9) SIGKILL     10) SIGUSR1     11) SIGSEGV     12) SIGUSR2
+		13) SIGPIPE     14) SIGALRM     15) SIGTERM     16) SIGSTKFLT
+		17) SIGCHLD     18) SIGCONT     19) SIGSTOP     20) SIGTSTP
+		21) SIGTTIN     22) SIGTTOU     23) SIGURG      24) SIGXCPU
+		25) SIGXFSZ     26) SIGVTALRM   27) SIGPROF     28) SIGWINCH
+		29) SIGIO       30) SIGPWR      31) SIGSYS      34) SIGRTMIN
+		35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3  38) SIGRTMIN+4
+		39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8
+		43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12
+		47) SIGRTMIN+13 48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14
+		51) SIGRTMAX-13 52) SIGRTMAX-12 53) SIGRTMAX-11 54) SIGRTMAX-10
+		55) SIGRTMAX-9  56) SIGRTMAX-8  57) SIGRTMAX-7  58) SIGRTMAX-6
+		59) SIGRTMAX-5  60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2
+		63) SIGRTMAX-1  64) SIGRTMAX
+
+		3 某个线程对程序非法请求
+return 和 exit 区别
+	1 return 关键字 exit是一个函数
+	2 return 是语言级别的
+		exit 是系统级别的
+	3 return 退出是把控制权交给调用函数
+		exit 退出是把控制权交给系统
+
+		
+exit 和 _exit()区别
+	exit会刷新缓冲区， 释放文件描述符，释放空间 .....
+exit => atexit => 
+	int atexit(void (*function)(void));
+	注册顺序和销毁顺序是相反
+
+
+父进程等待子进程状态
+	pid_t wait(int *status);
+	参数：表示等待子进程状态标志
+	pid_t waitpid(pid_t pid, int *status, int options);
+	
+hoemwork:
+	1 实现tree 递归实现
+	2 试着创建10个进程向文件中写数据1000 => 10000?
+
+	
+
+
+
+
+
+
+
+
+
+

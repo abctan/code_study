@@ -1,0 +1,186 @@
+net :
+三次握手实现原理
+	第一次握手：客户端向服务器发送一个SYN包(请求建立连接) SYN => 1 seq => X
+	第二次握手：服务器接受SYN包 会向客户端发送ACK包(确认包) ACK => 1 my_seq => Y SYN => 1 ack_seq => X + 1
+	第三次握手：客户端接受到服务器ACK包 ，再向服务器发送一个ACK包，ACK => 1  SYN => 0 ack_seq => y + 1  data => x + 1
+
+tcp :
+	1 客户端
+		1 socket
+		2 connect
+		3 write / read
+		4 close
+
+	2 服务器
+		1 socket 
+		2 bind
+		3 listen
+		4 accept
+		5 write / read
+		6 close
+
+=============================
+	网络套接子发送
+	ssize_t  send(int  s,  const  void *buf, size_t len, int
+	       flags);
+		   第一个参数：表示套接子文件描述符
+		   第二个参数：表示发送数据空间地址
+		   第三个参数：表示数据大小
+		   第四个参数：表示标志位 0
+		   返回值：
+		   	成功：表示发送数据个数
+			失败：-1
+	接受
+	ssize_t recv(int s, void *buf, size_t len, int flags);
+		   第一个参数：表示套接子文件描述符
+		   第二个参数：表示接受数据空间地址
+		   第三个参数：表示空间大小
+		   第四个参数：表示标志位 0
+		   返回值：
+				成功：表示接受多少个字节
+				失败：-1 | 0 表示退出
+		
+UDP:
+	客户端：
+		1 创建套接子
+		2 发送数据
+			ssize_t sendto(int s, const void *buf, size_t  len,  int
+			       flags, const struct sockaddr *to, socklen_t tolen);
+			
+			第一个参数：表示套接子描述符
+			第二个参数：表示接受数据空间地址
+			第三个参数：表示空间大小
+			第四个参数：标志位 0
+			第五个参数：结构体
+			第六个参数：结构体大小
+			返回值：
+				成功：发送字节数
+				失败：-1
+
+
+				
+	服务器：
+		1 创建套接子
+			socket
+		2 帮定服务端口
+			bind
+		3 接受数据	
+		ssize_t recvfrom(int s, void *buf, size_t len, int flags,
+		                        struct sockaddr *from, socklen_t *fromlen);
+			第一个参数：表示套接子文件描述符
+			第二个参数：表示发送数据空间地址
+			第三个参数：表示数据长度
+			第四个参数：表示标志位 0
+			第五个参数：表示套接子结构体信息
+				struct sockaddr_in => 
+					
+			第六个参数：表示结构体大小  16
+			返回值：
+				成功：表示发送数据个数(字节)
+				失败：-1
+
+		4 关闭
+
+	练习：
+		实现文件传输 
+		实现tell
+=========================================
+broadcast: udp
+
+	案例：循环播放文件
+	广播地址：192.168.0.255
+	send :
+				
+		套接子设置为广播属性
+		int setsockopt(int s, int level, int optname, const void
+		       *optval, socklen_t optlen);
+		第一个参数：表示套接子文件描述符
+		第二个参数：表示级别
+			SOL_SOCKET ： 表示基本套接子 *
+			IPPROTO_TCP ： 表示tcp套接子
+			IPPROTO_UDP :  表示udp套接子
+			IPPROTO_IP  ： 表示ipv4套接子
+			IPPROTO_IPV6 ：表示ipv6套接子
+		第三个参数：表示操作方式
+			SO_BROADCAST
+		第四个参数：表示开关
+			1 : 表示打开
+			0 : 表示关闭
+		第五个参数：表示开关参数大小
+		返回值：
+			成功0
+			失败：－1
+
+	recv:
+
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+多播 组播
+	多播地址：224.1.2.3
+	
+	发送端：
+		设置成多播
+	接受端：
+		添加用户到多播组中
+		struct ip_mreqn {
+			表示多播组号
+			struct in_addr imr_multiaddr; /* IP multicast group
+											 address */
+			表示用户ip地址								 
+			struct in_addr imr_address;   /* IP address of local
+											 interface */
+			表示序列 0								 
+			int            imr_ifindex;   /* interface index */
+		};
+		表示添加IP地址到目标中
+		int inet_pton(int af, const char *src, void *dst);
+		第一个参数：表示地址家族 AF_INET
+		第二个参数：表示IP地址 
+		第三个参数：表示把源ip地址赋值给目标地址
+
+		int inet_aton(const char *cp, struct in_addr *inp);
+		第一个参数：表示ip地址
+		第二参数：表示
+
+
+	注意：必须设置默认网关
+==========================================
+IO复用
+	多文件描述符管理
+	int select(int nfds, fd_set *readfds, fd_set *writefds,
+			fd_set *exceptfds, struct timeval *timeout);
+	第一个参数：表示文件描述符最大值 + 1
+	第二个参数：表示读集
+	第三个参数：表示写集
+	第四个参数：表示错误集合
+	第五个参数：表示时间结构体
+	struct timeval {
+		表示秒
+		long    tv_sec;         /* seconds */
+		表示微妙
+		long    tv_usec;        /* microseconds */
+	};
+		NULL ： 表示阻塞方式等待
+		0 0  :  表示无阻塞
+		2 2  :  表示时间到后就执行
+	返回值：
+		成功：文件描述符个数
+		失败：-1
+
+	void FD_CLR(int fd, fd_set *set); 	表示从集合中删除
+	int FD_ISSET(int fd, fd_set *set); 	表示判断是否在集合中
+	void FD_SET(int fd, fd_set *set);	表示添加到集合中
+	void FD_ZERO(fd_set *set);			表示清空集合
+
+
+
+
+
+
+
+
+
+
+
+
+

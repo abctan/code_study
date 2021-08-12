@@ -1,0 +1,234 @@
+
+创建线程：
+	int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr, void  *(*start_routine)(void*),  void  *restrictarg);
+
+线程退出
+	void pthread_exit(void *value_ptr);
+线程等待
+	int pthread_join(pthread_t thread, void **value_ptr);
+线程处理函数
+	void pthread_cleanup_pop(int execute);
+	void pthread_cleanup_push(void  (*routine)(void*),  void
+		          *arg);
+线程互斥锁
+	动态锁
+	int pthread_mutex_destroy(pthread_mutex_t *mutex);
+	int pthread_mutex_init(pthread_mutex_t *restrict mutex,
+			const pthread_mutexattr_t *restrict attr);
+	静态锁		
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+加锁和解锁
+	int pthread_mutex_lock(pthread_mutex_t *mutex);
+	int pthread_mutex_trylock(pthread_mutex_t *mutex);
+	int pthread_mutex_unlock(pthread_mutex_t *mutex);
+
+
+	注意：编译的时候要连接库文件 -lpthread
+
+===============================
+OSI7层互联网络参考模型
+	由底到高
+		物理层：检测物理线路，确保数据发送
+			集线器：
+				1 放大信号
+				2 扩展物理接口
+		数据链路层：保证数据在物理线路上的可靠传输
+			作用包括物理编址 网络拓扑结构 错误校验 帧序列以及流控。
+				编址：
+					统一编址
+					独立编址
+				拓扑结构：
+					总线型
+					星型
+					环形
+				错误校验
+					奇偶校验
+					和校验
+					
+
+			交换机：
+				自动寻址和交换作用
+		网络层：
+			就是把网络ip地址转换成MAC地址 这叫地址解析协议
+
+			路由器：
+				地址翻译 协议转换 数据格式转换等
+		传输层：
+			实现用户之间的数据交换 TCP UDP
+		会话层：保证数据链接
+			会话层所使用服务可使应用建立和位置会话，并使数据获得同步。
+		表示层：数据体现方式
+			加密和解密 压缩和解压缩。。。
+		应用层：数据用户接口，也就是应用层用户程序编辑接口
+
+	TCP/IP网络模型
+		传输层：
+		会话层：
+		表示层：
+		应用层：
+
+=========================================
+以太网帧格式：
+	目标的MAC地址：表示确认目标证的接受者
+	源的MAC地址  ：表示发送帧的工作站
+	类型		 ：表示接受设备如何解析数据字符
+	数据		 ：
+		数据帧	 ：帧头 + IP数据包 + 帧尾
+				 帧头：包括源和目标的MAC地址以及类型。
+				 帧尾：表示校验位
+		IP数据包 ：IP包头 +  TCP数据信息
+				IP包头 ： 源和目标的IP地址 类型 生存周期...
+		TCP数据包： TCP包头 + 实际数据
+				TCP包头 ： 源和目标端口号 帧序列 确认号 校验位。
+	校验位       ： 
+
+	最小64个字节 最大1518个字节
+
+IP ：
+	动态指定：
+	静态指定：
+
+查看网卡信息
+	ifconfig
+重启网络服务：
+	redhat : service network restart
+	Ubuntu : /etc/init.d/networking restart
+网卡配置文件
+	/etc/sysconfig/network-scripts/ifcfg-eth0 表示第一张网卡文件
+
+
+		# Advanced Micro Devices [AMD] 79c970 [PCnet32 LANCE]
+		#表示网卡名
+		DEVICE=eth0
+		#指定ip分配方式 static 表示静态 dhcp 表示动态
+		BOOTPROTO=static
+		#BOOTPROTO=dhcp
+		#MAC地址
+		HWADDR=00:0C:29:F9:9F:7C
+		#表示是否启动这张网卡
+		ONBOOT=yes
+		#表示默认子网掩码
+		NETMASK=255.255.255.0
+		#表示指定IP地址
+		IPADDR=192.168.0.254
+		#表示默认网关
+		GATEWAY=192.168.0.1
+		#表示网络协议
+		TYPE=Ethernet
+
+===========================
+tcp : 面向连接服务
+
+	客户端：
+		1 创建网络套接子
+			int socket(int domain, int type, int protocol);
+			第一个参数：表示地址家族
+				PF_INET ： 表示IPV4地址家族
+			第二个参数：表示类型
+				SOCK_STREAM ： 表示流式套接子类型
+				SOCK_DGRAM	： 表示数据报套接子类型
+				SOCK_RAW	： 表示原始套接子
+			第三个参数：表示端口协议 0
+				tcp : 0 and IPPROTO_TCP
+				udp : 0 and IPPROTO_UDP
+			返回值：
+				成功：文件描述符
+				失败：-1
+		2 请求建立连接
+			int    connect(int   sockfd,   const   struct   sockaddr
+			       *serv_addr, socklen_t addrlen);
+
+			第一个参数：表示套接子文件描述符 socket的返回值
+			第二个参数：套接子地址结构体
+			struct sockaddr_in {
+				表示地址家族
+				sa_family_t    sin_family; /* address family: AF_INET */
+				表示端口号 0 ~ 65535  => 
+				u_int16_t      sin_port;   /* port in network byte order */
+				表示网络ip地址 "192.168.0.254" => 
+				struct in_addr sin_addr;   /* internet address */
+			};
+
+			/* Internet address. */
+			struct in_addr {
+				u_int32_t      s_addr;     /* address in network byte order */
+			};
+			===============
+			struct sockaddr {
+			    sa_family_t sa_family;  /* address family, AF_xxx   */
+				    char        sa_data[14];    /* 14 bytes of protocol address */
+					};
+
+			主机字节序改变成网络字节序
+			uint32_t htonl(uint32_t hostlong);  长格式
+			uint16_t htons(uint16_t hostshort); 短格式
+
+			把网络字节序转换成主机字节序
+			uint32_t ntohl(uint32_t netlong);	长格式
+			uint16_t ntohs(uint16_t netshort);  短格式
+
+			数据存储方式不一致
+			网络存储方式一般是大端模式
+			主机存储方式一般是小端模式
+			大端模式：
+				高字节存储在底地址中 或者底字节存储在高地址中
+			小端模式：
+				高字节存储在高地址中 或者底字节存储在底地址中
+
+			int a = 0x12345678;
+
+
+			主机ip地址转换成网络ip地址
+			in_addr_t inet_addr(const char *cp);
+			in_addr_t inet_network(const char *cp); 网络二进制ip地址
+			网络ip地址转换成主机ip地址
+			char *inet_ntoa(struct in_addr in);
+			
+			第三个参数：表示套接子结构体空间大小
+			返回值：
+				成功：0
+				失败：-1
+
+	服务器：
+		1 创建套接子 表示用于连接用户
+			socket
+		2 帮定端口号
+			int  bind(int  sockfd,  const  struct sockaddr *my_addr,
+			       socklen_t addrlen);
+
+			第一个参数：表示套件字文件描述符
+			第二个参数：表示服务套接子结构体空间地址
+			第三个参数：表示空间大小
+			返回值：
+				成功 0
+				失败 －1
+		3 监听
+			int listen(int sockfd, int backlog);
+			第一个参数：表示套接子文件描述符
+			第二个参数：表示监听客户端个数
+		
+		4 连接
+			int  accept(int sockfd, struct sockaddr *addr, socklen_t
+			       *addrlen);
+
+			第一个参数：表示创建套接子文件描述符
+			第二个参数：表示套接子结构体 目标结构体
+			第三个参数：表示空间大小 指针
+			返回值：
+				成功：返回未使用最小文件描述符 用于处理数据
+				失败： －1
+
+练习：
+	传送一个文件
+
+	client => server => output
+
+homework :
+	实现网络聊天 zhangsan lisi 
+
+	实现ssh远程登录
+	实现ftp
+
+
+

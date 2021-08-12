@@ -1,0 +1,25 @@
+用户帐号信息文件
+	/etc/passwd
+	getpwnam() getpwuid() getpwent() setpwent() endpwent()
+组帐号信息文件
+	/etc/group
+	getgrnam() getgrgid() getgrent() setgrent() endgrent()
+用户密码信息文件
+	/etc/shadow
+加密函数
+	char *crypt(const char *key, const char *salt);
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+

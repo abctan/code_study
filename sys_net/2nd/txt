@@ -1,0 +1,183 @@
+
+kernel:
+	1 file system
+	2 memory 
+	3 pid 
+	4 device driver
+	5 net
+
+sysIO => fileIO
+	
+	open
+	close
+	read
+	write
+	perror
+
+==================================
+判断文件权限
+	int access(const char *pathname, int mode);
+	第一个参数：表示文件名
+	第二个参数：表示模式
+		R_OK : 表示是否可读
+		W_OK : 表示写
+		X_OK : 表示可执行
+		F_OK : 表示文件是否存在
+	返回值：
+		成功：0
+		失败：-1
+
+grep:
+	
+===============================
+ssize_t read(int fd, void *buf, size_t count);
+事件文件结构体
+	struct input_event {
+		struct timeval time;//按键的时间
+		__u16 type;//事件类型
+		__u16 code;//事件  模拟成什么按键
+		__s32 value;//按下1和抬起0  
+	};
+
+=================
+filename
+A => hello => open => write
+B => world => open => write
+复制文件描述符
+	int dup(int oldfd);
+	返回值，
+		未使用最小文件描述符
+	int dup2(int oldfd, int newfd);
+		第一个参数：旧的  fd1
+		第二个参数：新的  fd2 => 8
+	注意：可以指定一个未使用文件描述符
+		指定一个被占用的文件描述符，则关闭新的文件描述符，然后指向旧的文件描述符。
+======================================
+
+off_t lseek(int fildes, off_t offset, int whence);
+	第一个参数：表示文件描述符
+	第二个参数：表示偏移大小
+	第三个参数：表示偏移位置
+		
+	返回值：
+		成功：表示偏移大小(从文件开头)
+		失败：-1
+		
+练习：
+	循环实现一个文件播放
+
+=======================================
+获取文件状态标志
+	int fcntl(int fd, int cmd);
+	int fcntl(int fd, int cmd, long arg);
+	int fcntl(int fd, int cmd, struct flock *lock);
+	第一个参数：表示文件描述符
+	第二个参数：表示命令
+		F_DUPFD ： 表示复制文件描述符
+		F_GETFL	： 表示获取状态标志
+		F_SETFL ： 表示设置状态标志
+	第三个参数：表示对命令补充
+	返回值：
+		失败：-1
+
+=======================================
+获取文件属性
+	int stat(const char *path, struct stat *buf);
+	int fstat(int filedes, struct stat *buf);
+	int lstat(const char *path, struct stat *buf);
+	
+	第一个参数：表示文件路径
+	第二个参数：表示文件状态结构体
+	struct stat {
+		dev_t     st_dev;     /* ID of device containing file */
+		//表示设备id
+		ino_t     st_ino;     /* inode number */
+		表示文件inode节点 
+		mode_t    st_mode;    /* protection */
+		表示文件类型和权限
+		nlink_t   st_nlink;   /* number of hard links */
+		表示硬链接
+		uid_t     st_uid;     /* user ID of owner */
+		表示属主
+		gid_t     st_gid;     /* group ID of owner */
+		表示属组
+		dev_t     st_rdev;    /* device ID (if special file) */
+		表示设备id 块设备和字符设备
+		off_t     st_size;    /* total size, in bytes */
+		表示文件大小
+		blksize_t st_blksize; /* blocksize for filesystem I/O */
+		表示块大小
+		blkcnt_t  st_blocks;  /* number of blocks allocated */
+		表示多少块
+		time_t    st_atime;   /* time of last access */
+		表示访问时间 秒数 1970年1月1日 => 访问文件秒数
+		time_t    st_mtime;   /* time of last modification */
+		表示修改文件内容时间
+		time_t    st_ctime;   /* time of last status change */
+		表示修改文件属性(权限 属主 属组)
+	};
+	返回值：
+		成功：0
+		失败：-1
+	[root@localhost 2nd]# stat 01_cp.c 
+	  File: “01_cp.c”
+	    Size: 637             Blocks: 8          IO Block: 4096   一般文件
+		Device: 802h/2050d      Inode: 8592756     Links: 1
+		Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+		Access: 2019-12-02 15:51:28.000000000 +0800
+		Modify: 2019-12-02 09:26:13.000000000 +0800
+		Change: 2019-12-02 09:26:13.000000000 +0800
+
+	[root@localhost 2nd]# ll
+	总计 64
+	-rw-r--r-- 1 root root  637 12-02 09:26 01_cp.c
+	-rw-r--r-- 1 root root  329 12-02 09:32 02_mode.c
+	第一列：表示文件类型和权限
+		文件类型：第一列第一个字符
+			- : 表示普通文件
+			d : 表示目录文件
+			c : 表示字符设备类文件
+			l : 表示软连接文件
+			b : 表示块设备类文件
+			s : 表示套接子文件
+			p : 表示管道文件
+		文件权限：
+			r : 表示只读
+			w : 表示只写
+			x : 表示可执行
+			- : 表示无权限
+
+			三位为一组，工三组
+			第一组 ： 表示属主权限 文件拥有者
+			第二组 ： 表示属组权限 文件拥有组
+			第三组 ： 表示其他用户权限
+	第二列：表示硬连接数
+		硬链接：相当于给文件做一个备份
+			ln srcfilename destfilename
+		软连接：想给给文件做一个快捷方式
+			ln -s srcfilename destfilename
+	第三列：表示属主
+		uid => username
+		/etc/passwd : 用户帐号信息文件
+
+	第四列：表示文件属组
+		gid -> groupname
+		/etc/group
+	第五列：表示文件大小 字节
+		
+	第六列：表示文件内容时间
+
+		atime : 表示访问时间 cat tail head more less ...
+		mtime : 表示修改内容时间 同时会触发atime ctime
+		ctime : 表示修改属性时间(权限 属主 属组)
+	第七列：表示文件名
+
+	实现 ll filename
+
+
+
+
+
+
+
+

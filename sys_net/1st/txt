@@ -1,0 +1,269 @@
+sys:
+	就是系统(linux => kernel)给用户提供一些接口(function)，用户通过这些接口编程就是系统编程。
+
+kernel:
+	1 文件系统：把硬盘抽象成文件系统，方便用户使用。
+		windows: ms_dos fat16 fat32 fat64  ntfs ....
+		linux : fat nfs ext2 ext3 ext4 ...
+	2 内存管理：
+		虚拟内存：
+			32位系统下4G
+				0 - 3G ：用户态
+					stack	: 局部变量 临时变量 模块变量
+					heap	: 动态内存 malloc calloc realloc
+					DS:	全局变量和静态变量
+						BSS : 未初始化
+						RO	: 初始化
+					const: 常量
+					code : 代码
+				3 - 4G : 系统态
+				
+		物理内存：内存条
+
+		CPU ：如何找到虚拟内存地址 => 物理地址 => 系统启动的时候完成编址 => 内存管理机制 页表存储机制
+		
+		独立编址：
+		统一编址：
+		冯诺依缦体系结构：
+		哈佛体系结构：
+	
+	3 进程管理：
+		就是一段可执行代码，并放在内存中运行就是进程
+		进程唯一标识就是进程号
+
+		init进程：1号进程，是因为1号进程是所有进程祖先。
+		所有的进程都是通过1号进化直接或者间接创建的。
+		1号进程杀不死
+
+	进程状态：
+		D    Uninterruptible sleep (usually IO)  不可中端睡眠状态
+		R    Running or runnable (on run queue) 运行或者可运行状态
+		S    Interruptible sleep (waiting for an event to complete)
+			表示可中端睡眠状态
+		T    Stopped, either by a job control signal or because it is
+		     being traced.
+			 表示停止或者可在追踪状态
+			 W    paging (not valid since the 2.6.xx kernel)
+				表示保存在页中
+			 X    dead (should never be seen)
+			 	表示快要退出状态
+			 Z    Defunct ("zombie") process, terminated but not reaped by
+			      its parent.
+				 表示僵尸进程
+		<    high-priority (not nice to other users)
+			表示高优先级
+		N    low-priority (nice to other users)
+			表示底优先级
+		L    has pages locked into memory (for real-time and custom IO)
+			表示锁在在内存中
+		s    is a session leader
+			表示会话领导者
+		l    is multi-threaded (using CLONE_THREAD, like NPTL
+		     pthreads do)
+			 表示多线程
+		+    is in the foreground process group
+			表示进程组
+		
+		内核版本号：
+			[root@localhost 1st]# uname -r
+			2.6.18-194.el5
+
+			2 ：表示主版本号
+				表示系统架构发生重大改变才会升级
+			6 ：表示次版本号
+				表示GNU核心工程师才可以修改
+				奇数：表示测试版本
+				偶数：表示稳定版本
+			18：表示释放版本号
+				表示一些系统bug修改
+		进程五态模型：
+			新建态：创建进程所需要资源表相 ： 进程表相， 打开文件描述符，建立空间地址，分配内存资源 ....
+			就绪态：等待CPU分配运行资源
+			运行态：获得CPU资源，并放在内存中运行
+			挂起态：也叫阻塞态，就是一个IO请求或者中断等到程序处于挂起状态。
+			终止态：回收进程资源。
+	
+	进程之间通讯：
+		1 信号 ： 软中断
+		2 管道 ： 半双工模式 ，必须确保双方都在线。
+			三种通讯模式：
+				单工	：一段只能读或者只能写
+				半双工	：一段只能读，而另一端只能写
+				全双工	：一段即可以读又可以写
+
+			匿名管道：
+				只能实现父子进程或者兄弟进程之间通讯
+			有名管道：
+				可以实现任意进程之间通讯
+
+
+		3 消息队列：可以保证双方不在线问题
+		4 共享内存
+		5 信号量：锁
+		6 套接子 => net 就是利用套接子编程就是网络编程
+			TCP: 三次握手机制实现原理 
+			UDP:
+=======================================
+
+1 SYSIO => fileIO 3
+
+2 pid   => 4
+	pthid => 0.5
+	
+3 net  => 3
+
+===============================================
+fileIO => 文件操作 => dat store
+
+	写：
+		覆盖方式写
+		清空方式写
+		追加方式写
+	打开文件：
+		fopen:
+			r	: 表示只读
+				1 如果文件存在，则从文件开头读
+				2 如果文件不存在，则打开失败
+			r+	: 表示读写
+				1 如果文件存在，
+					读：从文件开头读
+					写：覆盖方式写  ？？？
+				2 如果文件不存在，则会失败 ？？？
+					
+			w	: 表示只写
+				1 文件存在，就会清空写
+				2 文件不存在，则会创建
+				
+			w+	: 表示读写 清空
+				1 文件存在，
+					读：除非写入数据，在通过文件指针偏移的方式读
+					写：清空写
+				2 文件不存在。则创建	
+
+			a	: 表示追加写
+				1 文件存在，写到文件结尾
+				2 文件不存在，则会创建文件 ？？？
+
+			a+	: 表示读写追加
+				1 文件存在：
+					写：文件结尾
+					读：文件开头
+				2 文件不存在，则创建
+
+
+		关闭文件
+			fclose
+			
+		按字符操作 man
+			fgetc()
+			fputc()
+		按行操作
+			fgets()
+			fputs()
+		按buf操作
+			fwrite()
+			size_t  fwrite(const  void  *ptr,  size_t  size,  size_t
+			       nmemb, FILE *stream);
+			fread()
+			size_t  fread(void *ptr, size_t size, size_t nmemb, FILE
+			       *stream);
+
+		按格式操作
+			fprintf()
+			fscanf()
+
+		偏移：
+			fseek()
+			ftell()
+			rewind()
+		错误函数
+			perror()
+
+	练习：实现cp
+=======================================
+在linux下操作文件两种方式：
+	文件指针 ： fileIO
+	文件描述符 ： sysIO
+								fileIO		sysIO
+	标准输入：键盘 鼠标			stdin		0
+	标准输出：显示器 打印机		stdout		1
+	错误输出：显示器 打印机		stderr		2
+
+sysIO:
+	打开
+	int open(const char *pathname, int flags);
+	第一个参数：表示文件路径
+	第二个参数：表示标志位
+		O_RDONLY：表示只读
+			如果文件存在，则打开成功，且从文件开头来读
+			如果文件不存在，则打开失败
+
+		O_WRONLY：表示只写
+		O_RDWR	：表示读写
+		O_CREAT	：表示创建
+		O_TRUNC ：表示清空
+		O_APPEND：表示追加
+		O_NONBLOCK：表示取消阻塞
+	返回值：
+		成功：返回新的未使用的最小文件描述符
+		失败：-1
+	int open(const char *pathname, int flags, mode_t mode);
+	第三个参数：表示模式 就是创建文件权限
+		the  permissions  of  the created  file  are (mode & ~umask)
+		umask => 0022 => 000 010 010
+		~umask        => 111 101 101
+		mode  => 0700 => 111 111 111
+					  => 111 101 101 => rwxr-xr-x
+		&     =>         111 000 000 => rwx------  
+	int creat(const char *pathname, mode_t mode);
+		第一个参数：表示文件路径
+		第二个参数：表示文件模式
+	
+
+	文件描述符：就是一个非负正数。同时，一个进程最多打开1024个文件描述符。
+
+
+	关闭：
+int close(int fd)
+
+	读文件：
+		ssize_t read(int fd, void *buf, size_t count);
+		第一个参数：表示文件描述符
+		第二个参数：表示获取数据空间地址
+		第三个参数：表示空间大小
+		返回值：
+			成功：表示获取数据个数 字节
+			失败：-1 
+			文件结尾 ：0
+
+
+	写数据 : 无缓冲
+		ssize_t write(int fd, const void *buf, size_t count);
+		第一个参数：表示文件描述符
+		第二个参数：表示存储数据空间空地
+		第三个参数：表示数据大小
+		返回值：
+			成功：写数据个数
+			失败：-1
+
+	fwrite() : 有缓冲区写
+	printf() : 行缓冲
+
+	fileIO:		sysIO
+		r	:	O_RDONLY
+		r+	:	O_RDWR 
+		w	:	O_WRONLY | O_CREAT | O_TRUNC
+		w+	:	O_RDWR | O_CREAT | O_TRUNC
+		a	:	O_WRONLY | O_APPEND | O_CREAT
+		a+	:   O_RDWR | O_APPEND | O_CREAT
+
+
+homework:
+	练习：验证creat的标志位 => flag
+	1 用sysio实现cp
+	2 用fileio实现 grep 
+		显示行号 和 关键自高亮
+========================================
+	
+
+

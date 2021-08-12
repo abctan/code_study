@@ -1,0 +1,160 @@
+进程环境：
+	extern char **environ;
+	int main(int argc, char **argv, char **env)
+
+	char *argv[] => "zhangsan"
+
+================================
+信号：软中断机制
+	
+	信号源：kill -l
+		ctrl + c : SIGINT
+		ctrl + \ : SIGQUIT
+		abort	 : SIGABRT
+		kill 	 : SIGKILL
+		pipe	 : SIGPIPE
+		alarm	 : SIGALRM
+
+	发送任意信号
+		int kill(pid_t pid, int sig);
+		第一个参数：表示进程号
+		第二个参数：表示信号源
+		返回值：
+			成功 ：0
+			失败 ： -1
+	接受信号
+		sighandler_t signal(int signum, sighandler_t handler);
+		第一个参数：表示信号源
+		第二个参数：表示接受到信号处理方式
+			SIG_IGN ： 表示忽略
+			SIG_DFL ： 表示默认 中断
+			func	:  表示自定义
+			typedef void (*sighandler_t)(int);
+		返回值：
+			成功：指向前一个信号函数
+			失败：SIG_ERR
+
+
+	发送闹钟信信号
+		unsigned int alarm(unsigned int seconds);
+
+	接受信号返回
+		int pause(void);
+
+	定时器：
+	获取定时器时间结构体
+	int getitimer(int which, struct itimerval *value);
+	设置定时器
+	int setitimer(int which, const struct itimerval *value,
+			struct itimerval *ovalue);
+	第一个参数：表示定时器类型
+		ITIMER_REAL ： 表示机器时间
+			SIGALRM => 14
+		ITIMER_VIRTUAL ： 表示用户态所消耗时间
+			SIGVTALRM => 26
+		ITIMER_PROF ： 表示用户态和系统态所消耗时间
+			SIGPROF => 27
+
+	第二个参数：表示时间结构体
+		设定闹钟时间案例
+		struct itimerval {
+			表示循环时间
+			struct timeval it_interval; /* next value */
+			表示第一次执行时间
+			struct timeval it_value;    /* current value */
+		};
+		struct timeval {
+			表示秒
+			long tv_sec;                /* seconds */
+			表示微妙
+			long tv_usec;               /* microseconds */
+		};
+
+	第三个参数：表示上次设定闹钟时间结构体 NULL
+	返回值：
+		成功 0
+		失败 -1
+=====================================
+管道命令：|
+	通过|把所有的命令连接起来，而前一个命令输出作为后一个命令输入
+	[root@localhost sig]# cat /etc/passwd | cut -d : -f 7 | sort | uniq | grep -v ^$ | wc -l
+
+	cat : 查看文件内容
+	cut : 表示切割
+	sort : 排序
+	uniq : 去掉重复行
+	grep : 查找匹配信息
+	wc : 统计
+		-l : 表示行
+		-w : 表示单词
+		-c : 表示字符
+
+
+管道文件：
+	创建管道文件
+		mkfifo filename
+
+管道：进程之间通讯
+	数据通讯模式三种：
+		单工：
+		半双工：
+		全双工：
+	
+	匿名管道：只能进行父子进化或者兄弟进程之间通讯
+		1 创建匿名管道
+			int pipe(int filedes[2]);
+
+			fd[0] => read
+			fd[1] => write
+		
+		匿名管道大小64K
+
+
+练习：
+	实现 cat /etc/passwd  | grep root
+
+	int fp => buf => fd[1] => read => fd[0] => strstr
+
+
+	child
+	exec函数家族  => stdout => 1 fd[1] dup2
+
+	parent => stdin => 0 fd[0] dup2 => stdout
+
+	有名管道：实现任意进程之间通讯
+	
+	1 创建管道文件
+		int mkfifo(const char *pathname, mode_t mode);
+		第一个参数：表示文件名
+		第二个参数：表示文件模式
+			
+===========================
+homework :
+	1 : 封装定时器
+		1 => 1111 => 1
+		2 => 2222 => 0
+		4 => 4444 => 1
+		7 => 7777 => 1
+		8 => 8888 => 0
+		......
+
+		struct timer_t{
+			struct timer_t *prev;
+			struct timer_t *next;
+			int t;//表示定时器时间
+			int count;//表示时间累加器
+			void *data;//表示指定数据
+			void (*func)(void *data);//执行函数
+			int flag;//是否循环
+				//1 表示循环 0 表示不循环
+			....	
+		};
+
+	2 : 实现一对一聊天 VT 
+================================================
+
+
+
+
+
+
